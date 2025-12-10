@@ -54,14 +54,74 @@ To solve the problem numerically, we discretize the bar into a series of disks. 
 4. compute the area at the next disk to keep the stress the same as the reference stress we do this using A = P / stress
 5. Continue the process up the bar length
 
+Code implementation of the above method is as follows:
+
+```py
+def compute_tapered_rod(P_applied_force, p_density, g_gravity, w0_initial_width, t0_initial_thickness, L_length, sections, alpha):
+    dx = L_length / sections # length of each section
+    x_positions = np.linspace(0, L_length, sections + 1) # Positions along the rod
+
+    force = P_applied_force # initial force at the bottom
+    # Lists created to store weights and areas of each section
+    disk_weights = []
+    areas = []
+
+    # Step 1. Setup the initial conditions for the bottom of the rod
+    areas.append(w0_initial_width * t0_initial_thickness) # area at bottom
+    # Step 2. Compute the reference stress at the bottom
+    reference_stress = stress_from_area(force, areas[-1]) # initial stress at bottom
+    disk_weights.append(0)  # No weight at the bottom
+
+    for i in range(1, sections + 1):
+        # Step 3. Compute weight of previous disk
+        disk_weight = p_density * g_gravity * areas[-1] * dx
+        disk_weights.append(disk_weight) # disk weight from x_position[i-1] to x_position[i]
+
+        # Update force on current area
+        force += disk_weight # force increases over rod length so we add
+
+        # Step 4. Compute the area needed to maintain the reference stress
+        area = force / reference_stress # compute area at position i
+        areas.append(area) # store area at position i
+
+        reference_stress *= (1 + alpha * dx)  # increase reference stress linearly
+
+        # Step 5. Continue to next section
+    return x_positions, areas, disk_weights
+```
+
 ## Results for all disk counts
 
-| 2 Disks                                           | 10 Disks                                            | 20 Disks                                            | 100 Disks                                             | 150 Disks                                             | 500 Disks                                             |
-| ------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
-| ![2 Disks](documentation/images/2_disks_area.png) | ![10 Disks](documentation/images/10_disks_area.png) | ![20 Disks](documentation/images/20_disks_area.png) | ![100 Disks](documentation/images/100_disks_area.png) | ![150 Disks](documentation/images/150_disks_area.png) | ![500 Disks](documentation/images/500_disks_area.png) |
+| Disks     | Area vs Position                                      |
+| --------- | ----------------------------------------------------- |
+| 2 Disks   | ![2 Disks](documentation/images/2_disks_area.png)     |
+| 10 Disks  | ![10 Disks](documentation/images/10_disks_area.png)   |
+| 20 Disks  | ![20 Disks](documentation/images/20_disks_area.png)   |
+| 100 Disks | ![100 Disks](documentation/images/100_disks_area.png) |
+| 150 Disks | ![150 Disks](documentation/images/150_disks_area.png) |
+| 500 Disks | ![500 Disks](documentation/images/500_disks_area.png) |
 
 ## Verification of the Lecture 3 case
 
+In Lecture 3 the case for our bar (square cross section) was derived as follows:
+$$A(x) = A_0 e^{\frac{y_0t\rho gx}{\sigma_0}}$$
+To verfify this in our code we increase the amount of disks we use and check to see if the numerical solution converges to the analytical solution.
+
+![Verification Plot](documentation/images/convergence_of_numerical_solution.png)
+
+We determine the error between the numerical and analytical solutions using the following code:
+
+```py
+    error = np.abs(np.array(areas) - analytical_areas)
+    max_error = np.max(error)
+```
+
+As we can see from the plot the error approaches zero as we increase the number of disks used in the numerical solution. This shows that our numerical solution is converging to the analytical solution derived in Lecture 3.
+
 ## Discussion
 
+Using the finite element method to discretize the bar into disks allows us to solve the problem in a simple manner. Since we are able to compute the area based off of the force and desired stress at the position we can adjust the area to maintain the stress profile we want. In fact with this method we could create any stress profile we want by feeding in a function that describes how we want the stress to change along the length of the bar. One potential limitation is that for more precision we need to increase the number of disks which increases the computational cost.
+
 ## Conclusion
+
+To conclude we have taken the analytical solution to maintain a uniform stress profile along a vertical bar under its own weight. From this we then created a numerical method and verified that it produces results that converge to the analytical solution as we increase the amount of steps used. This method can be extended to create any stress profile for instance a linearly increasing stress profile as shown in the code above.
