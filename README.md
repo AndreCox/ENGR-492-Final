@@ -4,6 +4,8 @@
 
 **Author: Andre Cox**
 
+**Student Number: 95076758**
+
 ## Problem Statement
 
 For this final exam, we are tasked with determining the shape of a vertical bar that will experience a uniform axial stress as well as the shape that will cause stress that increases by a certain percentage along its length.
@@ -120,7 +122,31 @@ As we can see from the plot the error approaches zero as we increase the number 
 
 ## Discussion
 
-Using the finite element method to discretize the bar into disks allows us to solve the problem in a simple manner. Since we are able to compute the area based off of the force and desired stress at the position we can adjust the area to maintain the stress profile we want. In fact with this method we could create any stress profile we want by feeding in a function that describes how we want the stress to change along the length of the bar. One potential limitation is that for more precision we need to increase the number of disks which increases the computational cost.
+Using the finite element method to discretize the bar into disks allows us to solve the problem in a simple manner. Since we are able to compute the area based off of the force and desired stress at the position we can adjust the area to maintain the stress profile we want. In fact with this method we could create any stress profile we want by feeding in a function that describes how we want the stress to change along the length of the bar. One potential limitation is that for more precision we need to increase the number of disks which increases the computational cost. We were also asked to confirm the following:
+
+- whether the stress remains uniform (or matches the assigned percentage increase)
+
+Below you will find the stress profiles and you can see that they match the expected behavior.
+![Stress Profiles for Various Alpha Values](documentation/images/stress_profiles.png)
+
+- whether equilibrium is satisfied
+
+Since we can see that our numerical solution converges to the analytical solution derived in Lecture 3 we confirm that the equilibrium is satisfied.
+
+- whether the solutions converge as the number of disks increases.
+
+As shown above in the section [Verification of the Lecture 3 case](#Verification-of-the-Lecture-3-case) we see that the error approaches zero as we increase the number of disks used in the numerical solution.
+
+Further we get the error for a couple of very high disk counts:
+
+| Disks         | Max Error           |
+| ------------- | ------------------- |
+| 1000 Disks    | 7.725575666799756   |
+| 10000 Disks   | 0.7869293485487674  |
+| 100000 Disks  | 0.07883907115657962 |
+| 1000000 Disks | 0.00788537096860864 |
+
+We see that as we increase the number of disks the error approaches zero.
 
 ## Conclusion
 
