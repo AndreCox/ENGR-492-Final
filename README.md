@@ -161,3 +161,7 @@ We see that as we increase the number of disks the error approaches zero.
 ## Conclusion
 
 To conclude we have taken the analytical solution to maintain a uniform stress profile along a vertical bar under its own weight. From this we then created a numerical method and verified that it produces results that converge to the analytical solution as we increase the amount of steps used. This method can be extended to create any stress profile for instance a linearly increasing stress profile as shown in the code above.
+
+![Final Stress Profile Animation](documentation/images/convergence.gif)
+
+Thank you for reading my final exam report!
