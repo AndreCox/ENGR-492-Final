@@ -6,6 +6,8 @@
 
 **Student Number: 95076758**
 
+### [Running Instructions](INSTRUCTIONS.md)
+
 ## Problem Statement
 
 For this final exam, we are tasked with determining the shape of a vertical bar that will experience a uniform axial stress as well as the shape that will cause stress that increases by a certain percentage along its length.
