@@ -18,12 +18,14 @@ This project was written in Python using a Jupyter Notebook. To run the code, pl
 
 3. **Install Required Libraries**: The code requires the following Python libraries:
 
-   - NumPy
-   - Matplotlib
+   - NumPy (used for numerical computations)
+   - Matplotlib (used for plotting graphs)
+   - Pandas (used for making tables)
+
      You can install these libraries using pip. Run the following command in your terminal:
 
    ```
-   pip install numpy matplotlib
+   pip install numpy matplotlib pandas
    ```
 
 4. **Run the notebook**:

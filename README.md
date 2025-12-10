@@ -52,45 +52,44 @@ Where $A_0$ is the area at the bottom of the bar.
 
 To solve the problem numerically, we discretize the bar into a series of disks. The steps are as follows:
 
-1. Compute the weight of the first disk element at the bottom using initial width and dx where dx = length / number of disks
-2. Compute the stress at the bottom using applied force and area, we save this as our reference stress
-3. Use the weight of the first disk to add to the applied force to get the total force at the next disk
-4. compute the area at the next disk to keep the stress the same as the reference stress we do this using A = P / stress
-5. Continue the process up the bar length
+1. Compute the stress profile along the length of the bar based on alpha
+2. Compute area based on the applied force and the stress at that position
+3. Determine the weight of the disk at the current position
+4. Update forces based on the weight of the disk
+5. Loop back to step 2 until the end of the bar
 
 Code implementation of the above method is as follows:
 
 ```py
 def compute_tapered_rod(P_applied_force, p_density, g_gravity, w0_initial_width, t0_initial_thickness, L_length, sections, alpha):
     dx = L_length / sections # length of each section
-    x_positions = np.linspace(0, L_length, sections + 1) # Positions along the rod
+    x_positions = np.linspace(0, L_length, sections) # Positions along the rod
 
-    force = P_applied_force # initial force at the bottom
+    forces = np.zeros(sections) # List to store forces at each section
+    forces[0] = P_applied_force # Initial force at the bottom
     # Lists created to store weights and areas of each section
-    disk_weights = []
-    areas = []
+    disk_weights = np.zeros(sections)
+    areas = np.zeros(sections)
 
-    # Step 1. Setup the initial conditions for the bottom of the rod
-    areas.append(w0_initial_width * t0_initial_thickness) # area at bottom
-    # Step 2. Compute the reference stress at the bottom
-    reference_stress = stress_from_area(force, areas[-1]) # initial stress at bottom
-    disk_weights.append(0)  # No weight at the bottom
+    # Step 1. Compute reference stress profile
+    areas[0] = w0_initial_width * t0_initial_thickness # initial area at bottom
+    reference_stress = stress_from_area(P_applied_force, areas[0]) * (1 + alpha * x_positions / L_length)  # reference stress profile over sections
 
-    for i in range(1, sections + 1):
-        # Step 3. Compute weight of previous disk
-        disk_weight = p_density * g_gravity * areas[-1] * dx
-        disk_weights.append(disk_weight) # disk weight from x_position[i-1] to x_position[i]
+    for i in range(sections):
+        # Step 2. Compute area
+        areas[i] = forces[i] / reference_stress[i] # compute area at position i
 
-        # Update force on current area
-        force += disk_weight # force increases over rod length so we add
+        # Step 3.
+        weight = p_density * g_gravity * areas[i] * dx # compute weight of disk at position i
+        disk_weights[i] = weight # store weight at position i
 
-        # Step 4. Compute the area needed to maintain the reference stress
-        area = force / reference_stress # compute area at position i
-        areas.append(area) # store area at position i
+        # if we are not at the last section since forces is i + 1
+        if i < sections - 1:
+            # Step 4. Update force for next section
+            forces[i + 1] = forces[i] + weight # update force for next section
+            # Step 5. Loop continues until the end of the bar
 
-        reference_stress *= (1 + alpha * dx)  # increase reference stress linearly
 
-        # Step 5. Continue to next section
     return x_positions, areas, disk_weights
 ```
 
@@ -139,14 +138,23 @@ Since we can see that our numerical solution converges to the analytical solutio
 
 As shown above in the section [Verification of the Lecture 3 case](#Verification-of-the-Lecture-3-case) we see that the error approaches zero as we increase the number of disks used in the numerical solution.
 
+| Disks     | Max Error (m^2) |
+| --------- | --------------- |
+| 2 Disks   | 255.568398      |
+| 10 Disks  | 237.682469      |
+| 20 Disks  | 202.169793      |
+| 100 Disks | 78.887824       |
+| 150 Disks | 56.522688       |
+| 500 Disks | 18.864820       |
+
 Further we get the error for a couple of very high disk counts:
 
-| Disks         | Max Error           |
-| ------------- | ------------------- |
-| 1000 Disks    | 7.725575666799756   |
-| 10000 Disks   | 0.7869293485487674  |
-| 100000 Disks  | 0.07883907115657962 |
-| 1000000 Disks | 0.00788537096860864 |
+| Disks         | Max Error (m^2) |
+| ------------- | --------------- |
+| 1000 Disks    | 9.659334        |
+| 10000 Disks   | 0.987111        |
+| 100000 Disks  | 0.098927        |
+| 1000000 Disks | 0.009895        |
 
 We see that as we increase the number of disks the error approaches zero.
 
